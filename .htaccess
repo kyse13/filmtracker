@@ -1,0 +1,45 @@
+# FilmTracker - Apache Configuration
+# Clean URLs and Security Headers
+
+# Enable Rewrite Engine
+RewriteEngine On
+RewriteBase /filmtracker/
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Prevent Directory Listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^(config\.php|\.htaccess|\.env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# API 
+RewriteCond %{REQUEST_URI} ^/filmtracker/api
+RewriteRule ^api/?(.*)$ api/index.php [QSA,L]
+
+# Clean URLs - Redirect to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+
+# PHP Settings
+<IfModule mod_php8.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+# Error Pages
+ErrorDocument 404 /filmtracker/index.php?url=404
+ErrorDocument 403 /filmtracker/index.php?url=403
+
